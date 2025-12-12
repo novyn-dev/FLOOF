@@ -1,5 +1,15 @@
+use lazy_static::lazy_static;
+use spin::Mutex;
 use core::fmt;
 use volatile::Volatile;
+
+lazy_static! {
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
+        col_pos: 0,
+        color_code: ColorCode::new(Color::LightBlue, Color::Black),
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) }
+    });
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
