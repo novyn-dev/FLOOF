@@ -2,9 +2,7 @@
 #![no_main]
 mod vga_buffer;
 
-use core::{f32, fmt::{write, Write}, panic::PanicInfo};
-
-use crate::vga_buffer::{Buffer, Color, ColorCode, WRITER, Writer};
+use core::{f32, panic::PanicInfo};
 
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
@@ -14,9 +12,8 @@ fn panic(_info: &PanicInfo) -> ! {
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
     let pi = f32::consts::PI;
-    let mut writer = WRITER.lock();
     for _ in 0..20 {
-        writeln!(writer, "the number of PI is {}", pi).unwrap();
+        println!("the number of PI is {}", pi);
     }
     loop {}
 }
