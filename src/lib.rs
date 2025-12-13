@@ -26,7 +26,7 @@ impl<T: Fn()> Testable for T {
     }
 }
 
-fn test_runner(tests: &[&dyn Testable]) {
+pub fn test_runner(tests: &[&dyn Testable]) {
     log!("Running {} tests", tests.len());
     for test in tests {
         test.run();
