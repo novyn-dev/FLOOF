@@ -1,6 +1,5 @@
 #![no_std]
 #![no_main]
-#![feature(custom_test_frameworks)]
 
 #[allow(unused_imports)]
 use core::panic::PanicInfo;
