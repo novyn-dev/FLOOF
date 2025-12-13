@@ -2,6 +2,7 @@
 #![no_main]
 #![feature(custom_test_frameworks)]
 #![test_runner(crate::test_runner)]
+#![reexport_test_harness_main = "test_main"]
 mod vga_buffer;
 
 use core::panic::PanicInfo;
@@ -25,5 +26,15 @@ fn panic(info: &PanicInfo) -> ! {
 pub extern "C" fn _start() -> ! {
     println!("Make yourself at home - Novyn");
 
+    #[cfg(test)]
+    test_main();
+
     loop {}
+}
+
+#[test_case]
+fn it_works() {
+    let sum = 1 + 1;
+    assert_eq!(sum, 2);
+    println!("[ok]");
 }
