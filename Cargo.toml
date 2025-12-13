@@ -17,3 +17,4 @@ x86_64 = "0.15.4"
 
 [package.metadata.bootimage]
 test-args = ["-device", "isa-debug-exit,iobase=0xf4,iosize=0x04"]
+target-success-exit-code = 33 # (0x10 << 1) | 1
