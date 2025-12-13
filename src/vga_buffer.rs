@@ -177,3 +177,9 @@ macro_rules! println {
 macro_rules! print {
     ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
 }
+
+pub fn change_vga_color(fg_color: Color, bg_color: Color) {
+    let mut writer = WRITER.lock();
+    writer.color_fg(fg_color);
+    writer.color_bg(bg_color);
+}

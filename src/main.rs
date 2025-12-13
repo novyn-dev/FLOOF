@@ -7,6 +7,8 @@ mod vga_buffer;
 
 use core::panic::PanicInfo;
 
+use crate::vga_buffer::{Color, change_vga_color};
+
 #[cfg(test)]
 fn test_runner(tests: &[&dyn Fn()]) {
     println!("Running {} tests", tests.len());
@@ -24,7 +26,9 @@ fn panic(info: &PanicInfo) -> ! {
 #[allow(clippy::empty_loop)]
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
-    println!("Make yourself at home - Novyn");
+    print!("Make yourself at home - ");
+    change_vga_color(Color::Yellow, Color::Black);
+    println!("Novyn");
 
     #[cfg(test)]
     test_main();
