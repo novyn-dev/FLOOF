@@ -18,8 +18,8 @@ uart_16550 = "0.4.0"
 
 [package.metadata.bootimage]
 test-args = [
-    "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
-    "-serial", "stdio",
-    "-display", "none",
+    "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04", # exit, with port 0xf4
+    "-serial", "stdio", # allow IO from qemu serial to the host
+    "-display", "none", # make qemu run in bg during test
 ]
 test-success-exit-code = 33 # (0x10 << 1) | 1
