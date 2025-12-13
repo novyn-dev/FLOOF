@@ -7,7 +7,7 @@ mod vga_buffer;
 
 use core::panic::PanicInfo;
 
-use crate::vga_buffer::{Color, change_vga_color};
+use crate::vga_buffer::{Color, vga_color};
 
 #[cfg(test)]
 fn test_runner(tests: &[&dyn Fn()]) {
@@ -27,8 +27,9 @@ fn panic(info: &PanicInfo) -> ! {
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
     print!("Make yourself at home - ");
-    change_vga_color(Color::Yellow, Color::Black);
+    vga_color(Color::Yellow, Color::Black);
     println!("Novyn");
+    vga_color(Color::White, Color::Black);
 
     #[cfg(test)]
     test_main();
