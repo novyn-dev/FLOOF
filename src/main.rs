@@ -2,7 +2,7 @@
 #![no_main]
 mod vga_buffer;
 
-use core::{f32, panic::PanicInfo};
+use core::panic::PanicInfo;
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
@@ -10,6 +10,7 @@ fn panic(info: &PanicInfo) -> ! {
     loop {}
 }
 
+#[allow(clippy::empty_loop)]
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
     println!("Make yourself at home - Novyn");
