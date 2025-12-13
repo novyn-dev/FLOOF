@@ -34,6 +34,18 @@ pub fn exit_qemu(code: QemuExitCode) {
     }
 }
 
+pub trait Testable {
+    fn run(&self);
+}
+
+impl<T: Fn()> Testable for T {
+    fn run(&self) {
+        serial_print!("{}...\t", core::any::type_name::<T>());
+        self();
+        serial_println!("[ok]");
+    }
+}
+
 #[cfg(test)]
 fn test_runner(tests: &[&dyn Fn()]) {
     log!("Running {} tests", tests.len());
@@ -77,5 +89,4 @@ pub extern "C" fn _start() -> ! {
 fn it_works() {
     let sum = 1 + 1;
     assert_eq!(sum, 2);
-    serial_println!("[ok]");
 }
