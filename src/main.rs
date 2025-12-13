@@ -9,6 +9,14 @@ mod serial;
 use core::panic::PanicInfo;
 use crate::vga_buffer::{Color, vga_color};
 
+/// combines both println! and serial_println!
+macro_rules! log {
+    ($($arg:tt)*) => {{
+        println!($($arg)*);
+        serial_println!($($arg)*);
+    }};
+}
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
@@ -28,7 +36,7 @@ pub fn exit_qemu(code: QemuExitCode) {
 
 #[cfg(test)]
 fn test_runner(tests: &[&dyn Fn()]) {
-    println!("Running {} tests", tests.len());
+    log!("Running {} tests", tests.len());
     for test in tests {
         test();
     }
@@ -59,5 +67,5 @@ pub extern "C" fn _start() -> ! {
 fn it_works() {
     let sum = 1 + 1;
     assert_eq!(sum, 2);
-    println!("[ok]");
+    serial_println!("[ok]");
 }
