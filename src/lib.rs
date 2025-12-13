@@ -14,7 +14,6 @@ macro_rules! log {
     }};
 }
 
-
 pub trait Testable {
     fn run(&self);
 }

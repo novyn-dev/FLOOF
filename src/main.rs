@@ -1,10 +1,28 @@
 #![no_std]
 #![no_main]
+#![feature(custom_test_frameworks)]
+#![test_runner(test_runner)]
+#![reexport_test_harness_main = "test_main"]
 
 #[allow(unused_imports)]
 use core::panic::PanicInfo;
-use floof::{print, println};
+use floof::{QemuExitCode, Testable, exit_qemu, print, println, serial_println};
 use floof::vga_buffer::{Color, vga_color};
+
+macro_rules! log {
+    ($($arg:tt)*) => {{
+        println!($($arg)*);
+        serial_println!($($arg)*);
+    }};
+}
+
+fn test_runner(tests: &[&dyn Testable]) {
+    log!("Running {} tests", tests.len());
+    for test in tests {
+        test.run();
+    }
+    exit_qemu(QemuExitCode::Success);
+}
 
 #[allow(clippy::empty_loop)]
 #[unsafe(no_mangle)]
