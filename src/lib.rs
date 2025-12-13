@@ -41,6 +41,11 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
     loop {}
 }
 
+#[cfg(test)]
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    test_panic_handler(info);
+}
 
 pub mod vga_buffer;
 pub mod serial;
