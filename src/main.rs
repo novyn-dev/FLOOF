@@ -6,7 +6,6 @@
 mod vga_buffer;
 
 use core::panic::PanicInfo;
-use x86_64::instructions::port::Port;
 use crate::vga_buffer::{Color, vga_color};
 
 #[allow(dead_code)]
@@ -18,8 +17,10 @@ pub enum QemuExitCode {
 }
 
 pub fn exit_qemu(code: QemuExitCode) {
-    let mut port = Port::new(0xf4); // 0xf4 is the port to exit
+    use x86_64::instructions::port::Port;
+
     unsafe {
+        let mut port = Port::new(0xf4); // 0xf4 is the port to exit
         port.write(code as u32);
     }
 }
