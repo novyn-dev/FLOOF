@@ -184,3 +184,15 @@ pub fn vga_color(fg_color: Color, bg_color: Color) {
     writer.color_fg(fg_color);
     writer.color_bg(bg_color);
 }
+
+/// "TestTestTestTest" should be displayed on the screen
+#[test_case]
+fn println_output() {
+    let s = "TestTestTestTest";
+    println!("{}", s);
+
+    for (col, c) in s.chars().enumerate() {
+        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT-2][col].read();
+        assert_eq!(char::from(screen_char.ascii_char), c)
+    }
+}
