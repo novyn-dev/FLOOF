@@ -42,7 +42,9 @@ impl<T: Fn()> Testable for T {
     fn run(&self) {
         serial_print!("{}...\t", core::any::type_name::<T>());
         self();
+        vga_color(Color::LightGreen, Color::Black);
         serial_println!("[ok]");
+        vga_color(Color::White, Color::Black);
     }
 }
 
@@ -50,7 +52,7 @@ impl<T: Fn()> Testable for T {
 fn test_runner(tests: &[&dyn Fn()]) {
     log!("Running {} tests", tests.len());
     for test in tests {
-        test();
+        test.run();
     }
     exit_qemu(QemuExitCode::Success);
 }
