@@ -11,6 +11,8 @@ pub mod interrupts;
 
 use core::panic::PanicInfo;
 
+use crate::interrupts::init_idt;
+
 /// combines both println! and serial_println!
 macro_rules! log {
     ($($arg:tt)*) => {{
@@ -67,6 +69,10 @@ pub fn exit_qemu(code: QemuExitCode) {
         let mut port = Port::new(0xf4); // 0xf4 is the port to exit
         port.write(code as u32);
     }
+}
+
+pub fn init() {
+    init_idt();
 }
 
 #[cfg(test)]
