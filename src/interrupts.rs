@@ -1,4 +1,4 @@
-use x86_64::{instructions::interrupts::int3, structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode}};
+use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode};
 use lazy_static::lazy_static;
 use crate::{gdt::DOUBLE_FAULT_IST_INDEX, println};
 
@@ -31,5 +31,6 @@ extern "x86-interrupt" fn page_fault_handler(stack_frame: InterruptStackFrame, _
 
 #[test_case]
 fn breakpoint_exception() {
+    use x86_64::instructions::interrupts::int3;
     int3(); //interupt
 }

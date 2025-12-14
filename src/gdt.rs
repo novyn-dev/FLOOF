@@ -1,5 +1,5 @@
 use lazy_static::lazy_static;
-use x86_64::{VirtAddr, structures::{gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector}, tss::TaskStateSegment}};
+use x86_64::{VirtAddr, instructions::tables::load_tss, registers::segmentation::{CS, Segment}, structures::{gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector}, tss::TaskStateSegment}};
 
 pub const DOUBLE_FAULT_IST_INDEX: u16 = 0;
 
@@ -31,4 +31,14 @@ lazy_static! {
 pub struct Selectors {
     pub code_selector: SegmentSelector,
     pub tss_selector: SegmentSelector,
+}
+
+pub fn init() {
+    let selectors = &GDT.1;
+
+    GDT.0.load();
+    unsafe {
+        CS::set_reg(selectors.code_selector);
+        load_tss(selectors.tss_selector);
+    }
 }
