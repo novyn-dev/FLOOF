@@ -10,7 +10,6 @@ pub mod serial;
 pub mod interrupts;
 
 use core::panic::PanicInfo;
-
 use crate::interrupts::init_idt;
 
 /// combines both println! and serial_println!
@@ -78,6 +77,7 @@ pub fn init() {
 #[cfg(test)]
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() {
+    init();
     test_main();
     loop {}
 }

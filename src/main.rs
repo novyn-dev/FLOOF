@@ -34,10 +34,6 @@ pub extern "C" fn _start() -> ! {
     vga_color(Color::White, Color::Black);
 
     floof::init();
-    int3(); // int3 interrupt
-
-    #[cfg(test)]
-    test_main();
 
     println!("did not crash!");
     loop {}
