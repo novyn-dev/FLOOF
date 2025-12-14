@@ -35,6 +35,9 @@ pub extern "C" fn _start() -> ! {
 
     floof::init();
 
+    #[cfg(test)]
+    test_main();
+
     println!("did not crash!");
     loop {}
 }
