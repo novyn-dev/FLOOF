@@ -4,6 +4,9 @@
 #![test_runner(test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+pub mod vga_buffer;
+pub mod serial;
+
 use core::panic::PanicInfo;
 
 /// combines both println! and serial_println!
@@ -46,9 +49,6 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
 fn panic(info: &PanicInfo) -> ! {
     test_panic_handler(info);
 }
-
-pub mod vga_buffer;
-pub mod serial;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
