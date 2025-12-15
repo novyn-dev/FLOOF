@@ -8,7 +8,6 @@
 use core::panic::PanicInfo;
 use floof::{QemuExitCode, Testable, exit_qemu, print, println, serial_println};
 use floof::vga_buffer::{Color, vga_color};
-use x86_64::instructions::interrupts::int3;
 
 macro_rules! log {
     ($($arg:tt)*) => {{
@@ -25,7 +24,6 @@ fn test_runner(tests: &[&dyn Testable]) {
     exit_qemu(QemuExitCode::Success);
 }
 
-#[allow(clippy::empty_loop)]
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() -> ! {
     print!("Make yourself at home - ");
@@ -35,17 +33,11 @@ pub extern "C" fn _start() -> ! {
 
     floof::init();
 
-    fn stack_overflow() {
-        stack_overflow();
-    }
-
-    stack_overflow();
-
     #[cfg(test)]
     test_main();
 
     println!("did not crash!");
-    loop {}
+    floof::hlt_loop();
 }
 
 #[cfg(not(test))]
