@@ -75,6 +75,7 @@ pub fn init() {
     interrupts::init();
     gdt::init();
     unsafe { PICS.lock().initialize(); }
+    x86_64::instructions::interrupts::enable();
 }
 
 #[cfg(test)]

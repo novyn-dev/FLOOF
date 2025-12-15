@@ -2,7 +2,23 @@ use pic8259::ChainedPics;
 use spin::Mutex;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode};
 use lazy_static::lazy_static;
-use crate::{gdt::DOUBLE_FAULT_IST_INDEX, println};
+use crate::{gdt::DOUBLE_FAULT_IST_INDEX, print, println};
+
+#[derive(Debug, Clone, Copy)]
+#[repr(u8)]
+pub enum InterruptIndex {
+    Timer = PIC1_OFFSET
+}
+
+impl InterruptIndex {
+    pub fn as_u8(&self) -> u8 {
+        *self as u8
+    }
+
+    pub fn as_usize(&self) -> usize {
+        usize::from(self.as_u8())
+    }
+}
 
 lazy_static! {
     static ref IDT: InterruptDescriptorTable = {
@@ -11,6 +27,7 @@ lazy_static! {
         unsafe { idt.double_fault.set_handler_fn(double_fault_handler)
                 .set_stack_index(DOUBLE_FAULT_IST_INDEX); }
         idt.page_fault.set_handler_fn(page_fault_handler);
+        idt[InterruptIndex::Timer.as_u8()].set_handler_fn(timer_interrupt_handler);
         idt
     };
 }
@@ -29,6 +46,10 @@ extern "x86-interrupt" fn double_fault_handler(stack_frame: InterruptStackFrame,
 
 extern "x86-interrupt" fn page_fault_handler(stack_frame: InterruptStackFrame, _err_code: PageFaultErrorCode) {
     println!("EXCEPTION: PAGE FAULT\n{:#?}", stack_frame);
+}
+
+extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFrame) {
+    print!(".")
 }
 
 // PIC offsets range from 32..47, typically
