@@ -44,7 +44,7 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    floof::hlt_loop();
 }
 
 #[cfg(test)]
