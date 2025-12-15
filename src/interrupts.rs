@@ -49,7 +49,12 @@ extern "x86-interrupt" fn page_fault_handler(stack_frame: InterruptStackFrame, _
 }
 
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFrame) {
-    print!(".")
+    print!(".");
+
+    let interrupt_idx = InterruptIndex::Timer.as_u8();
+    unsafe {
+        PICS.lock().notify_end_of_interrupt(interrupt_idx);
+    }
 }
 
 // PIC offsets range from 32..47, typically
