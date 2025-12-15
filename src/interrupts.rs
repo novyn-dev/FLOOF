@@ -1,13 +1,14 @@
 use pic8259::ChainedPics;
 use spin::Mutex;
-use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode};
+use x86_64::{instructions::port::Port, structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode}};
 use lazy_static::lazy_static;
 use crate::{gdt::DOUBLE_FAULT_IST_INDEX, print, println};
 
 #[derive(Debug, Clone, Copy)]
 #[repr(u8)]
 pub enum InterruptIndex {
-    Timer = PIC1_OFFSET
+    Timer = PIC1_OFFSET,
+    Keyboard // comes after the PIC lmfao
 }
 
 impl InterruptIndex {
@@ -28,6 +29,7 @@ lazy_static! {
                 .set_stack_index(DOUBLE_FAULT_IST_INDEX); }
         idt.page_fault.set_handler_fn(page_fault_handler);
         idt[InterruptIndex::Timer.as_u8()].set_handler_fn(timer_interrupt_handler);
+        idt[InterruptIndex::Keyboard.as_u8()].set_handler_fn(keyboard_interrupt_handler);
         idt
     };
 }
@@ -51,7 +53,19 @@ extern "x86-interrupt" fn page_fault_handler(stack_frame: InterruptStackFrame, _
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFrame) {
     print!(".");
 
-    let interrupt_idx = InterruptIndex::Timer.as_u8();
+    let interrupt_idx = InterruptIndex::Timer.as_u8(); // timer idx
+    unsafe {
+        PICS.lock().notify_end_of_interrupt(interrupt_idx);
+    }
+}
+
+extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStackFrame) {
+    print!("k");
+    let mut port = Port::new(0x60); // PS/2 I/O port
+    let key: u8 = unsafe { port.read() };
+    print!("{key}");
+
+    let interrupt_idx = InterruptIndex::Keyboard.as_u8(); // kb idx
     unsafe {
         PICS.lock().notify_end_of_interrupt(interrupt_idx);
     }
