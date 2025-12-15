@@ -1,3 +1,5 @@
+use pic8259::ChainedPics;
+use spin::Mutex;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode};
 use lazy_static::lazy_static;
 use crate::{gdt::DOUBLE_FAULT_IST_INDEX, println};
@@ -28,6 +30,12 @@ extern "x86-interrupt" fn double_fault_handler(stack_frame: InterruptStackFrame,
 extern "x86-interrupt" fn page_fault_handler(stack_frame: InterruptStackFrame, _err_code: PageFaultErrorCode) {
     println!("EXCEPTION: PAGE FAULT\n{:#?}", stack_frame);
 }
+
+// PIC offsets range from 32..47, typically
+pub const PIC1_OFFSET: u8 = 32; // 32 + 8
+pub const PIC2_OFFSET: u8 = PIC1_OFFSET + 8; // 32 + 8 + 8
+
+pub static PICS: Mutex<ChainedPics> = Mutex::new( unsafe { ChainedPics::new(PIC1_OFFSET, PIC2_OFFSET) });
 
 #[test_case]
 fn breakpoint_exception() {

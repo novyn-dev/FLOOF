@@ -13,7 +13,7 @@ pub mod gdt;
 use core::panic::PanicInfo;
 use x86_64::{instructions::tables::load_tss, registers::segmentation::{CS, Segment}};
 
-use crate::{gdt::GDT, interrupts::init_idt};
+use crate::{gdt::GDT, interrupts::{PICS, init_idt}};
 
 /// combines both println! and serial_println!
 macro_rules! log {
@@ -83,6 +83,8 @@ pub fn init() {
         CS::set_reg(selectors.code_selector);
         load_tss(selectors.tss_selector);
     }
+
+    unsafe { PICS.lock().initialize(); }
 }
 
 #[cfg(test)]
