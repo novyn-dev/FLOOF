@@ -6,6 +6,7 @@ use volatile::Volatile;
 
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
+        row_pos: 0,
         col_pos: 0,
         color_code: ColorCode::new(Color::White, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) }
@@ -85,6 +86,7 @@ pub struct Buffer {
 }
 
 pub struct Writer {
+    pub row_pos: usize,
     pub col_pos: usize,
     pub color_code: ColorCode,
     pub buffer: &'static mut Buffer
@@ -102,16 +104,13 @@ impl Writer {
         match byte {
             b'\n' => self.newline(),
             byte => {
-                let row = BUFFER_HEIGHT - 1;
-                let col = self.col_pos;
-
-                if col >= BUFFER_WIDTH {
+                if self.col_pos >= BUFFER_WIDTH {
                     self.newline();
                 }
 
                 let color_code = self.color_code;
 
-                self.buffer.chars[row][col].write(ScreenChar {
+                self.buffer.chars[self.row_pos][self.col_pos].write(ScreenChar {
                     ascii_char: byte,
                     color_code,
                 });
@@ -132,14 +131,19 @@ impl Writer {
     }
 
     fn newline(&mut self) {
-        for row in 1..BUFFER_HEIGHT {
-            for col in 0..BUFFER_WIDTH {
-                let char = self.buffer.chars[row][col].read();
-                self.buffer.chars[row - 1][col].write(char); // copy them to row - 1 (up)
-            }
-        }
-        self.clear_row(BUFFER_HEIGHT-1);
         self.col_pos = 0;
+        if self.row_pos + 1 < BUFFER_HEIGHT {
+            self.row_pos += 1;
+        } else {
+            // scroll
+            for row in 1..BUFFER_HEIGHT {
+                for col in 0..BUFFER_WIDTH {
+                    let char = self.buffer.chars[row][col].read();
+                    self.buffer.chars[row - 1][col].write(char); // copy them to row - 1 (up)
+                }
+            }
+            self.clear_row(BUFFER_HEIGHT-1);
+        }
     }
 
     fn clear_row(&mut self, row: usize) {
@@ -200,7 +204,7 @@ fn println_output() {
         writeln!(writer, "\n{}", s).expect("writeln failed");
 
         for (col, c) in s.chars().enumerate() {
-            let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT-2][col].read();
+            let screen_char = WRITER.lock().buffer.chars[writer.row_pos-1][col].read();
             assert_eq!(char::from(screen_char.ascii_char), c)
         }
     });
