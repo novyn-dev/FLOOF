@@ -71,6 +71,12 @@ pub fn exit_qemu(code: QemuExitCode) {
     }
 }
 
+pub fn hlt_loop() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
+}
+
 pub fn init() {
     interrupts::init();
     gdt::init();
@@ -83,7 +89,7 @@ pub fn init() {
 pub extern "C" fn _start() {
     init();
     test_main();
-    loop {}
+    hlt_loop();
 }
 
 #[test_case]
