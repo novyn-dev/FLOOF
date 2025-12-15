@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 use spin::Mutex;
-use x86_64::instructions::interrupts;
+use x86_64::instructions::interrupts::{self, without_interrupts};
 use core::fmt;
 use volatile::Volatile;
 
@@ -192,11 +192,16 @@ pub fn vga_color(fg_color: Color, bg_color: Color) {
 /// "TestTestTestTest" should be displayed on the screen
 #[test_case]
 fn println_output() {
+    use core::fmt::Write;
     let s = "TestTestTestTest";
-    println!("{}", s);
 
-    for (col, c) in s.chars().enumerate() {
-        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT-2][col].read();
-        assert_eq!(char::from(screen_char.ascii_char), c)
-    }
+    without_interrupts(|| {
+        let mut writer = WRITER.lock();
+        writeln!(writer, "\n{}", s).expect("writeln failed");
+
+        for (col, c) in s.chars().enumerate() {
+            let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT-2][col].read();
+            assert_eq!(char::from(screen_char.ascii_char), c)
+        }
+    });
 }
