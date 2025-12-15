@@ -11,9 +11,7 @@ pub mod interrupts;
 pub mod gdt;
 
 use core::panic::PanicInfo;
-use x86_64::{instructions::tables::load_tss, registers::segmentation::{CS, Segment}};
-
-use crate::{gdt::GDT, interrupts::{PICS, init_idt}};
+use crate::interrupts::PICS;
 
 /// combines both println! and serial_println!
 macro_rules! log {
@@ -74,16 +72,8 @@ pub fn exit_qemu(code: QemuExitCode) {
 }
 
 pub fn init() {
-    init_idt();
-
-    let selectors = &GDT.1;
-
-    GDT.0.load();
-    unsafe {
-        CS::set_reg(selectors.code_selector);
-        load_tss(selectors.tss_selector);
-    }
-
+    interrupts::init();
+    gdt::init();
     unsafe { PICS.lock().initialize(); }
 }
 
