@@ -1,3 +1,4 @@
+use pc_keyboard::HandleControl;
 use pic8259::ChainedPics;
 use spin::Mutex;
 use x86_64::{instructions::port::Port, structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode}};
@@ -60,10 +61,26 @@ extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFr
 }
 
 extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStackFrame) {
-    print!("k");
+    use pc_keyboard::{Keyboard, ScancodeSet1, layouts};
+
+    lazy_static! {
+        static ref KEYBOARD: Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> =
+            Mutex::new(Keyboard::new(ScancodeSet1::new(), layouts::Us104Key, HandleControl::Ignore));
+    }
+
     let mut port = Port::new(0x60); // PS/2 I/O port
-    let key: u8 = unsafe { port.read() };
-    print!("{key}");
+    let scancode: u8 = unsafe { port.read() };
+    let mut keyboard = KEYBOARD.lock();
+
+    #[allow(clippy::collapsible_if)]
+    if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
+        if let Some(key) = keyboard.process_keyevent(key_event) {
+            match key {
+                pc_keyboard::DecodedKey::RawKey(key_code) => print!("{:?}", key_code),
+                pc_keyboard::DecodedKey::Unicode(c) => print!("{}", c),
+            }
+        }
+    }
 
     let interrupt_idx = InterruptIndex::Keyboard.as_u8(); // kb idx
     unsafe {

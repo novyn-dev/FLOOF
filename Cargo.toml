@@ -16,6 +16,7 @@ spin = "0.10.0"
 x86_64 = "0.15.4"
 uart_16550 = "0.4.0"
 pic8259 = "0.11.0"
+pc-keyboard = "0.8.0"
 
 [package.metadata.bootimage]
 test-args = [
