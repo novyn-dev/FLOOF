@@ -1,7 +1,7 @@
 use pc_keyboard::HandleControl;
 use pic8259::ChainedPics;
 use spin::Mutex;
-use x86_64::{instructions::port::Port, structures::idt::{InterruptDescriptorTable, InterruptStackFrame}};
+use x86_64::{VirtAddr, instructions::port::Port, structures::idt::{InterruptDescriptorTable, InterruptStackFrame}};
 use lazy_static::lazy_static;
 use crate::{gdt::DOUBLE_FAULT_IST_INDEX, print, println};
 
@@ -52,7 +52,7 @@ use crate::hlt_loop;
 extern "x86-interrupt" fn page_fault_handler(stack_frame: InterruptStackFrame, err_code: PageFaultErrorCode) {
     use x86_64::registers::control::Cr2;
     println!("EXCEPTION: PAGE FAULT");
-    println!("Accessed Address: {:?}", Cr2::read());
+    println!("Accessed Address: {:?}", Cr2::read().unwrap_or(VirtAddr::zero()));
     println!("Error code: {:?}", err_code);
     println!("{:#?}", stack_frame);
     hlt_loop();
