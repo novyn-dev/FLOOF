@@ -26,8 +26,8 @@ fn test_runner(tests: &[&dyn Testable]) {
     exit_qemu(QemuExitCode::Success);
 }
 
+// no_mangle isnt needed
 entry_point!(kernel_entry);
-#[unsafe(no_mangle)]
 fn kernel_entry(boot_info: &'static BootInfo) -> ! {
     print!("Make yourself at home - ");
     vga_color(Color::Yellow, Color::Black);
