@@ -11,6 +11,10 @@ pub mod interrupts;
 pub mod gdt;
 
 use core::panic::PanicInfo;
+#[cfg(test)]
+use bootloader::BootInfo;
+use bootloader::entry_point;
+
 use crate::interrupts::PICS;
 
 /// combines both println! and serial_println!
@@ -85,8 +89,9 @@ pub fn init() {
 }
 
 #[cfg(test)]
-#[unsafe(no_mangle)]
-pub extern "C" fn _start() {
+entry_point!(test_kernel_entry);
+#[cfg(test)]
+fn test_kernel_entry(_boot_info: &'static BootInfo) -> ! {
     init();
     test_main();
     hlt_loop();
