@@ -6,8 +6,10 @@
 
 #[allow(unused_imports)]
 use core::panic::PanicInfo;
+use bootloader::{BootInfo, entry_point};
 use floof::{QemuExitCode, Testable, exit_qemu, print, println, serial_println};
 use floof::vga_buffer::{Color, vga_color};
+use x86_64::registers::control::Cr3;
 
 macro_rules! log {
     ($($arg:tt)*) => {{
@@ -24,8 +26,9 @@ fn test_runner(tests: &[&dyn Testable]) {
     exit_qemu(QemuExitCode::Success);
 }
 
+entry_point!(kernel_entry);
 #[unsafe(no_mangle)]
-pub extern "C" fn _start() -> ! {
+fn kernel_entry(boot_info: &'static BootInfo) -> ! {
     print!("Make yourself at home - ");
     vga_color(Color::Yellow, Color::Black);
     println!("Novyn");
