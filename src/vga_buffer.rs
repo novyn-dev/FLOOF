@@ -204,7 +204,7 @@ fn println_output() {
         writeln!(writer, "\n{}", s).expect("writeln failed");
 
         for (col, c) in s.chars().enumerate() {
-            let screen_char = WRITER.lock().buffer.chars[writer.row_pos-1][col].read();
+            let screen_char = writer.buffer.chars[writer.row_pos-1][col].read();
             assert_eq!(char::from(screen_char.ascii_char), c)
         }
     });
