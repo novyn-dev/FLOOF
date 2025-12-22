@@ -52,8 +52,8 @@ use crate::hlt_loop;
 extern "x86-interrupt" fn page_fault_handler(stack_frame: InterruptStackFrame, err_code: PageFaultErrorCode) {
     use x86_64::registers::control::Cr2;
     println!("EXCEPTION: PAGE FAULT");
-    println!("Accessed Address: {:?}", Cr2::read().unwrap_or(VirtAddr::zero()));
     println!("Error code: {:?}", err_code);
+    println!("Accessed Address: {:?}", Cr2::read());
     println!("{:#?}", stack_frame);
     hlt_loop();
 }
@@ -77,21 +77,22 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStac
 
     let mut port = Port::new(0x60); // PS/2 I/O port
     let scancode: u8 = unsafe { port.read() };
-    let mut keyboard = KEYBOARD.lock();
+    crate::task::keyboard::add_scancode(scancode);
 
-    #[allow(clippy::collapsible_if)]
-    if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
-        if let Some(key) = keyboard.process_keyevent(key_event) {
-            match key {
-                pc_keyboard::DecodedKey::RawKey(key_code) => print!("{:?}", key_code),
-                pc_keyboard::DecodedKey::Unicode(c) => print!("{}", c),
-            }
-        }
-    }
+    // let mut keyboard = KEYBOARD.lock();
+    //
+    // #[allow(clippy::collapsible_if)]
+    // if let Ok(Some(key_event)) = keyboard.add_byte(scancode) {
+    //     if let Some(key) = keyboard.process_keyevent(key_event) {
+    //         match key {
+    //             pc_keyboard::DecodedKey::RawKey(key_code) => print!("{:?}", key_code),
+    //             pc_keyboard::DecodedKey::Unicode(c) => print!("{}", c),
+    //         }
+    //     }
+    // }
 
-    let interrupt_idx = InterruptIndex::Keyboard.as_u8(); // kb idx
     unsafe {
-        PICS.lock().notify_end_of_interrupt(interrupt_idx);
+        PICS.lock().notify_end_of_interrupt(InterruptIndex::Keyboard.as_u8());
     }
 }
 

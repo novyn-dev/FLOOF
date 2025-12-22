@@ -4,11 +4,19 @@
 #![test_runner(test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
+extern crate alloc;
 #[allow(unused_imports)]
 use core::panic::PanicInfo;
+use alloc::boxed::Box;
+use alloc::rc::Rc;
+use alloc::vec::Vec;
+use alloc::vec;
 use bootloader::{BootInfo, entry_point};
 use floof::memory::{BootInfoFrameAllocator, EmptyFrameAllocator};
-use floof::{QemuExitCode, Testable, exit_qemu, memory, print, println, serial_println};
+use floof::task::Task;
+use floof::task::executor::Executor;
+use floof::task::keyboard::print_keypresses;
+use floof::{QemuExitCode, Testable, allocator, exit_qemu, memory, print, println, serial_println};
 use floof::vga_buffer::{Color, vga_color};
 use x86_64::VirtAddr;
 use x86_64::registers::control::Cr3;
@@ -19,6 +27,15 @@ macro_rules! log {
         println!($($arg)*);
         serial_println!($($arg)*);
     }};
+}
+
+async fn six_seven() -> u32 {
+    67
+}
+
+async fn example_task() {
+    let number = six_seven().await;
+    println!("the funny number is {}", number);
 }
 
 fn test_runner(tests: &[&dyn Testable]) {
@@ -39,12 +56,12 @@ fn kernel_entry(boot_info: &'static BootInfo) -> ! {
 
     floof::init();
 
-    // let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
-    // let mut mapper = unsafe { memory::init(phys_mem_offset) };
-    // let mut frame_allocator = unsafe {
-    //     BootInfoFrameAllocator::init(&boot_info.memory_map)
-    // };
-    //
+    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let mut mapper = unsafe { memory::init(phys_mem_offset) };
+    let mut frame_allocator = unsafe {
+        BootInfoFrameAllocator::init(&boot_info.memory_map)
+    };
+
     // let page = Page::containing_address(VirtAddr::new(0));
     // memory::create_example_mapping(page, &mut mapper, &mut frame_allocator);
     //
@@ -66,12 +83,19 @@ fn kernel_entry(boot_info: &'static BootInfo) -> ! {
     //     let phys = mapper.translate_addr(virt);
     //     println!("{virt:?} -> {phys:?}");
     // }
+    allocator::init_heap(&mut mapper, &mut frame_allocator)
+        .expect("Heap initialization failed");
 
-    #[cfg(test)]
-    test_main();
+    let mut executor = Executor::new();
+    executor.spawn(Task::new(example_task()));
+    executor.spawn(Task::new(print_keypresses()));
+    executor.run();
 
-    println!("did not crash!");
-    floof::hlt_loop();
+     #[cfg(test)]
+     test_main();
+    //
+    // println!("did not crash!");
+    // floof::hlt_loop();
 }
 
 #[cfg(not(test))]
